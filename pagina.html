@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RIAD Chicken - Pollo a la Brasa</title>
+  <style>
+    :root{
+      --bg:#fff8f0;
+      --accent:#e84a27; /* naranja caldo */
+      --accent-dark:#c93a1d;
+      --muted:#6b6b6b;
+      --card:#fff;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 8px 24px rgba(0,0,0,0.08);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,var(--bg),#fff);color:#222}
+
+    header{
+      display:flex;gap:20px;align-items:center;justify-content:space-between;padding:18px 28px;background:linear-gradient(90deg, rgba(232,74,39,0.06), rgba(232,74,39,0.02));backdrop-filter: blur(2px);
+      position:sticky;top:0;z-index:30;border-bottom:1px solid rgba(0,0,0,0.04)
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;box-shadow:var(--shadow)}
+    h1{font-size:20px;margin:0}
+    header p{margin:0;color:var(--muted)}
+
+    main{display:grid;grid-template-columns:1fr 380px;gap:26px;padding:28px;max-width:1200px;margin:18px auto}
+
+    /* Product grid */
+    .store{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+    .card{background:var(--card);border-radius:14px;padding:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+    .thumb{height:170px;border-radius:10px;background:#f2f2f2;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .thumb img{width:100%;height:100%;object-fit:cover}
+    .title{display:flex;justify-content:space-between;align-items:center}
+    .title h3{margin:0;font-size:18px}
+    .desc{color:var(--muted);font-size:14px;min-height:38px}
+    .meta{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .price{font-weight:700;color:var(--accent-dark)}
+    .actions{display:flex;gap:8px}
+    .btn{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn.secondary{background:transparent;color:var(--accent-dark);border:2px solid rgba(201,58,29,0.08)}
+
+    /* Sidebar cart */
+    .sidebar{position:sticky;top:80px}
+    .panel{background:linear-gradient(180deg,rgba(255,255,255,0.98),var(--glass));padding:14px;border-radius:12px;box-shadow:var(--shadow)}
+    .cart-list{display:flex;flex-direction:column;gap:10px;max-height:300px;overflow:auto;padding-right:6px}
+    .cart-item{display:flex;gap:10px;align-items:center}
+    .cart-item img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+    .qty{display:flex;align-items:center;gap:6px}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* Checkout area */
+    .checkout{margin-top:12px}
+    .qr-box{display:flex;flex-direction:column;gap:8px;align-items:center;padding:10px;border-radius:10px;border:1px dashed rgba(0,0,0,0.06);background:#fff}
+    .qr-box img{width:180px;height:180px;object-fit:contain}
+
+    input[type=file]{display:block}
+    .upload-preview{max-width:160px;border-radius:8px}
+
+    footer{padding:20px;text-align:center;color:var(--muted)}
+
+    /* Responsive */
+    @media (max-width:900px){main{grid-template-columns:1fr;gap:14px;padding:14px} .sidebar{position:static}}
+
+    /* little playful touches */
+    .badge{background:rgba(232,74,39,0.1);color:var(--accent-dark);padding:6px 10px;border-radius:999px;font-weight:700}
+
+    .editable{background:#fff9f5;padding:8px;border-radius:8px;border:1px dashed rgba(0,0,0,0.03)}
+    .muted-note{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">RIAD</div>
+      <div>
+        <h1>RIAD Chicken</h1>
+        <p>Pollo a la brasa - Sabor peruano, pedido rápido</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="badge">Especial: Yape</div>
+      <div class="muted-note">Contacto: 992192951</div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h2 style="margin:0">Menú</h2>
+        <div class="muted-note">Haz clic en "Añadir" para sumar al carrito.</div>
+      </div>
+
+      <div class="store" id="productGrid">
+        <!-- Productos generados por JS -->
+      </div>
+
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <h3>Tu carrito</h3>
+        <div class="cart-list" id="cartList">
+          <div class="small">Tu carrito está vacío</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <div class="small">Total:</div>
+          <div style="font-weight:800;font-size:18px" id="totalPrice">S/0.00</div>
+        </div>
+
+        <div class="checkout">
+          <h4>Pagar con Yape</h4>
+          <div class="qr-box">
+            <img id="yapeQR" src="imagenes/WhatsApp Image 2025-11-01 at 9.18.15 PM.jpeg" alt="QR Yape">
+            <div class="small">Escanea con Yape y sube la captura abajo.</div>
+            <label class="small">Subir captura de pago (PNG/JPG) <input id="proofFile" type="file" accept="image/*"></label>
+            <img id="previewProof" class="upload-preview" style="display:none" alt="preview">
+            <button class="btn" id="sendProofBtn">Enviar comprobante</button>
+            <div id="sendStatus" class="muted-note"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" id="clearCart">Vaciar carrito</button>
+          <button class="btn secondary" id="downloadCSV">Descargar orden (CSV)</button>
+        </div>
+
+        <p class="muted-note" style="margin-top:10px">Nota: la web puede enviar el comprobante y datos a un Google Sheet / correo si configuras el endpoint en la sección de <strong>configuración</strong> del código (más abajo).</p>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="panel">
+        <h4>Configuración (para administrador)</h4>
+        <p class="muted-note">Pega aquí la URL de tu endpoint (Google Apps Script / Webhook) que reciba FormData con: <code>email, items (json), total, file</code>.</p>
+        <label class="small">Endpoint URL <input id="backendUrl" type="text" style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:1px solid #eee"></label>
+        <p class="muted-note">Si no tienes backend, puedes descargar el CSV o configurar un Google Apps Script siguiendo las instrucciones dentro del código fuente.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    © <strong>RIAD Chicken</strong> - Pollo a la brasa. Página creada para administrar ventas y comprobantes. 
+  </footer>
+
+  <script>
+    /******************************************************************
+     * RIAD Chicken - Single-file demo
+     *
+     * - Contiene: HTML + CSS + JS para catálogo, carrito, subida de comprobante
+     * - Para enviar comprobantes en "tiempo real" a un Excel o correo, el
+     *   sistema necesita un endpoint servidor (Google Apps Script o webhook).
+     *   Ver instrucciones en la parte inferior de este script.
+     ******************************************************************/
+
+    // Productos iniciales (puedes editar texto, precio e imagen en la UI)
+    const initialProducts = [
+      {id:'p_entero', name:'Pollo a la brasa entero', price:55.00, desc:'Acompañado de papas fritas con ensalada, salsas y 4 aguaditos de CORTESIA.', img:'https://i.pinimg.com/736x/78/10/5e/78105e0ff778874bcef06d4280d13513.jpg'},
+      {id:'p_medio', name:'1/2 Pollo a la brasa', price:32.00, desc:'Acompañado de papas fritas con ensalada, salsas y 2 aguaditos de CORTESIA.', img:'https://i.pinimg.com/1200x/e8/a5/e8/e8a5e8670eeb028ae8e20267f8ad04e9.jpg'},
+      {id:'p_cuarto', name:'1/4 Pollo a la brasa', price:18.00, desc:'Acompañado de papas fritas con ensalada, salsas y 1 aguadito de CORTESIA.', img:'https://i.pinimg.com/736x/eb/2c/e6/eb2ce6b8608e72f179cd0c453644380c.jpg'},
+      {id:'p_ocho', name:'1/8 Pollo a la brasa', price:12.00, desc:'Acompañado de papas fritas con ensalada y salsas.', img:'https://i.pinimg.com/1200x/44/16/b6/4416b63093cd067a522fd6a36a546096.jpg'},
+      {id:'salchipapa', name:'Salchipapa simple', price:10.00, desc:'Papas fritas con salchicha y salsas.', img:'https://i.pinimg.com/1200x/85/cd/a9/85cda9f9e7577c2f34284afde9c3cf0f.jpg'},
+      {id:'salchipapa_royal', name:'Salchipapa royal', price:13.00, desc:'Papas fritas con salchicha incluye huevo, pollo desmenuzado y salsas.', img:'https://i.pinimg.com/736x/f1/b3/3f/f1b33fc5d7e993244060440980b5d4eb.jpg'},
+    ];
+
+    // Cart stored in localStorage
+    let cart = JSON.parse(localStorage.getItem('riad_cart')||'[]');
+
+    // Helper: format currency (Peruvian Soles)
+    function fmt(v){ return 'S/'+Number(v).toFixed(2); }
+
+    // Render products
+    const productGrid = document.getElementById('productGrid');
+    function renderProducts(){
+      productGrid.innerHTML = '';
+      initialProducts.forEach(p=>{
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `
+          <div class="thumb"><img src="${p.img}" alt="${p.name}"></div>
+          <div class="title"><h3 contenteditable="true" class="editable" data-id="${p.id}-name">${p.name}</h3><div class="price" contenteditable="true" data-id="${p.id}-price">${fmt(p.price)}</div></div>
+          <div class="desc" contenteditable="true" data-id="${p.id}-desc">${p.desc}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="actions">
+              <button class="btn" data-id="${p.id}" data-action="add">Añadir</button>
+              <button class="btn secondary" data-id="${p.id}" data-action="oneclick">+1 y pagar</button>
+            </div>
+            <div class="small">SKU: ${p.id}</div>
+          </div>
+        `;
+        productGrid.appendChild(card);
+      });
+
+      // Make editable fields update product array
+      document.querySelectorAll('[contenteditable]').forEach(el=>{
+        el.addEventListener('blur', e=>{
+          const id = el.getAttribute('data-id');
+          if(!id) return;
+          const [pid, field] = id.split('-');
+          const prod = initialProducts.find(x=>x.id===pid);
+          if(!prod) return;
+          if(field==='price'){
+            // parse price like S/12.50 or 12.50
+            let v = el.innerText.replace(/[S,s,/,\s]/g,''); v = parseFloat(v) || prod.price; prod.price = v;
+            el.innerText = fmt(prod.price);
+          } else if(field==='desc'){
+            prod.desc = el.innerText;
+          } else if(field==='name'){
+            prod.name = el.innerText;
+          }
+          saveProductsToLocal();
+        });
+      });
+
+      // Buttons
+      productGrid.querySelectorAll('button').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const id = b.getAttribute('data-id');
+          const action = b.getAttribute('data-action');
+          const prod = initialProducts.find(x=>x.id===id);
+          if(action==='add'){
+            addToCart(prod,1);
+          } else if(action==='oneclick'){
+            addToCart(prod,1); openYapePanel();
+          }
+        });
+      });
+    }
+
+    function saveProductsToLocal(){ localStorage.setItem('riad_products', JSON.stringify(initialProducts)); }
+
+    // Cart functions
+    const cartList = document.getElementById('cartList');
+    const totalPriceEl = document.getElementById('totalPrice');
+
+    function renderCart(){
+      cartList.innerHTML = '';
+      if(cart.length===0){ cartList.innerHTML = '<div class="small">Tu carrito está vacío</div>'; totalPriceEl.innerText = fmt(0); return; }
+      cart.forEach(item=>{
+        const div = document.createElement('div'); div.className='cart-item';
+        div.innerHTML = `
+          <img src="${item.img}" alt="${item.name}">
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between"><div><strong>${item.name}</strong><div class="small">${item.desc}</div></div><div class="small">${fmt(item.price)}</div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+              <div class="qty">
+                <button class="btn secondary" data-action="dec" data-id="${item.id}">-</button>
+                <div class="small">${item.qty}</div>
+                <button class="btn" data-action="inc" data-id="${item.id}">+</button>
+              </div>
+              <button class="btn secondary" data-action="remove" data-id="${item.id}">Eliminar</button>
+            </div>
+          </div>
+        `;
+        cartList.appendChild(div);
+      });
+
+      // attach events
+      cartList.querySelectorAll('button').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const action = b.getAttribute('data-action');
+          const id = b.getAttribute('data-id');
+          if(action==='inc') changeQty(id,1);
+          if(action==='dec') changeQty(id,-1);
+          if(action==='remove') removeFromCart(id);
+        });
+      });
+
+      const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
+      totalPriceEl.innerText = fmt(total);
+      localStorage.setItem('riad_cart', JSON.stringify(cart));
+    }
+
+    function addToCart(prod, qty=1){
+      const existing = cart.find(x=>x.id===prod.id);
+      if(existing) existing.qty += qty; else cart.push({...prod, qty});
+      renderCart();
+    }
+    function changeQty(id, delta){
+      const item = cart.find(x=>x.id===id); if(!item) return; item.qty+=delta; if(item.qty<=0) cart = cart.filter(x=>x.id!==id); renderCart(); }
+    function removeFromCart(id){ cart = cart.filter(x=>x.id!==id); renderCart(); }
+
+    document.getElementById('clearCart').addEventListener('click', ()=>{ cart = []; renderCart(); });
+
+    // Download CSV functionality
+    document.getElementById('downloadCSV').addEventListener('click', ()=>{
+      if(cart.length===0){ alert('El carrito está vacío.'); return; }
+      const rows = [['Producto','Cantidad','Precio unitario','Subtotal']];
+      cart.forEach(i=>rows.push([i.name,i.qty,i.price,(i.price*i.qty).toFixed(2)]));
+      const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
+      rows.push([]); rows.push(['TOTAL','', '', total.toFixed(2)]);
+      const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='orden_riad.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    // Yape flow
+    const proofFile = document.getElementById('proofFile');
+    const previewProof = document.getElementById('previewProof');
+    const sendProofBtn = document.getElementById('sendProofBtn');
+    const sendStatus = document.getElementById('sendStatus');
+    const backendUrlInput = document.getElementById('backendUrl');
+
+    function openYapePanel(){ window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); }
+
+    proofFile.addEventListener('change', e=>{
+      const f = e.target.files[0]; if(!f) return; const url = URL.createObjectURL(f); previewProof.src=url; previewProof.style.display='block';
+    });
+
+    // IMPORTANT: set your backend endpoint here OR paste it into the UI input
+    // The backend must accept a POST with FormData: {email, items (json string), total, file}
+    let BACKEND_ENDPOINT = '';
+    backendUrlInput.addEventListener('input', ()=>{ BACKEND_ENDPOINT = backendUrlInput.value.trim(); });
+
+    sendProofBtn.addEventListener('click', async ()=>{
+      if(cart.length===0){ alert('Carrito vacío. Agrega productos primero.'); return; }
+      const f = proofFile.files[0]; if(!f){ alert('Selecciona la captura de pago.'); return; }
+      const items = cart.map(i=>({id:i.id,name:i.name,qty:i.qty,price:i.price}));
+      const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
+
+      // prepare FormData
+      const form = new FormData();
+      form.append('email','isaiasjoaquin1160@gmail.com');
+      form.append('items', JSON.stringify(items));
+      form.append('total', total);
+      form.append('file', f, f.name);
+
+      sendStatus.innerText = 'Enviando comprobante...';
+
+      if(BACKEND_ENDPOINT){
+        try{
+          const res = await fetch(BACKEND_ENDPOINT, {method:'POST', body:form});
+          if(res.ok){ sendStatus.innerText = 'Enviado correctamente. Revisar correo/Google Sheets.'; cart=[]; renderCart(); previewProof.style.display='none'; proofFile.value=''; }
+          else{ sendStatus.innerText = 'Hubo un error al enviar (server).'; console.error(await res.text()); }
+        }catch(err){ sendStatus.innerText = 'Error de red al enviar.'; console.error(err); }
+        return;
+      }
+
+      // Fallback: generate an email body with base64 image (nota: mailto no adjunta archivos)
+      sendStatus.innerHTML = 'No hay endpoint configurado. Puedes descargar la orden (CSV) o configurar un endpoint para envío automático.';
+    });
+
+    // Load from local storage
+    (function init(){
+      try{ const saved = JSON.parse(localStorage.getItem('riad_products')); if(Array.isArray(saved)) { for(let i=0;i<initialProducts.length;i++){ const s = saved.find(x=>x.id===initialProducts[i].id); if(s) Object.assign(initialProducts[i], s); } } }catch(e){}
+      renderProducts(); renderCart();
+    })();
+
+    /******************************************************************
+     * BACKEND / Google Apps Script - INSTRUCCIONES RÁPIDAS
+     *
+     * Opción A) Google Apps Script (añade a Google Sheets + reenvía por correo):
+     * 1) Crea un nuevo Google Sheet.
+     * 2) Ve a Extensiones -> Apps Script y pega el siguiente código (reemplaza YOUR_EMAIL si quieres):
+     *
+     * function doPost(e){
+     *   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+     *   var emailTo = 'isaiasjoaquin1160@gmail.com';
+     *   var items = JSON.parse(e.parameter.items);
+     *   var total = e.parameter.total;
+     *   var timestamp = new Date();
+     *   // guardar fila resumen
+     *   sheet.appendRow([timestamp, JSON.stringify(items), total, e.parameter.email || emailTo]);
+     *
+     *   // si viene un archivo en multipart, es un poco más avanzado: usa e.postData.getDataAsString() o recibe base64
+     *   // Para evitar complejidad, en el cliente podrías convertir la imagen a base64 y enviarla como 'image' param.
+     *
+     *   // enviar correo
+     *   MailApp.sendEmail(emailTo, 'Nuevo comprobante RIAD', 'Se adjuntó un nuevo comprobante. Total: '+total);
+     *   return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+     * }
+     *
+     * 3) Deploy -> New deployment -> tipo Web App -> Allow: Anyone (o Anyone, even anonymous) -> Deploy.
+     * 4) Copia la URL y pégala como "Endpoint URL" en la caja de configuración de la página.
+     *
+     * Nota: para recibir archivos binarios desde el cliente en GAS necesitas pasos extra (recibir base64 y decodificar).
+     * Una alternativa sencilla: subir la imagen a un servicio de hosting/Cloud Storage (o a Google Drive vía API) y enviar solo el enlace.
+     *
+     * Opción B) Servicio de Email desde cliente (EmailJS): crear cuenta en https://www.emailjs.com/ y usar su SDK para enviar archivos.
+     * Opción C) Crear un pequeño webhook en un servidor (Node/Python) que reciba multipart/form-data y guarde/reenvíe.
+     *
+     ******************************************************************/
+  </script>
+</body>
+</html>
